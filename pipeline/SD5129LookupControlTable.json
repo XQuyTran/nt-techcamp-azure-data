@@ -1,0 +1,162 @@
+{
+	"name": "SD5129LookupControlTable",
+	"properties": {
+		"activities": [
+			{
+				"name": "LookupControlTable",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "SD5129_Static_controltable",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "ForEachRow",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "LookupControlTable",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('LookupControlTable').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "CopyfromBlobToSQL",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true,
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"writeBehavior": "insert",
+									"sqlWriterUseTableLock": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"value": "@json(item().TargetJson)",
+									"type": "Expression"
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "SD5129_Dynamic_sourcedataset",
+									"type": "DatasetReference",
+									"parameters": {
+										"ContainerName": {
+											"value": "@trim(item().ContainerName)",
+											"type": "Expression"
+										},
+										"SourceFile": {
+											"value": "@trim(item().SourceFile)",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "SD5129_Dynamic_sinkdataset",
+									"type": "DatasetReference",
+									"parameters": {
+										"TargetDatabase": {
+											"value": "@item().TargetDatabase",
+											"type": "Expression"
+										},
+										"TargetSchema": {
+											"value": "@item().TargetSchema",
+											"type": "Expression"
+										},
+										"TargetTable": {
+											"value": "@item().TargetTable",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "UpdatePipelineandRunData",
+							"type": "Script",
+							"dependsOn": [
+								{
+									"activity": "CopyfromBlobToSQL",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"linkedServiceName": {
+								"referenceName": "SD5129incrementalcontrol",
+								"type": "LinkedServiceReference"
+							},
+							"typeProperties": {
+								"scripts": [
+									{
+										"type": "Query",
+										"text": {
+											"value": "update dbo.MetadataControlTable\nset Pipeline_Name = '@{pipeline().Pipeline}',\nRunId ='@{pipeline().RunId}',\nActivityStart='@{activity('CopyfromBlobToSQL').output.executionDetails[0].start}',\nActivityEnd = '@{utcNow()}',\nActivityStatus = '@{activity('CopyfromBlobToSQL').output.executionDetails[0].status}',\nFilesRead = '@{activity('CopyfromBlobToSQL').output.filesRead}',\nRowsRead = '@{activity('CopyfromBlobToSQL').output.rowsRead}',\nSourcePeakConnections = '@{activity('CopyfromBlobToSQL').output.sourcePeakConnections}',\nRowsWritten = @{activity('CopyfromBlobToSQL').output.rowsCopied},\nSinkPeakConnections = '@{activity('CopyfromBlobToSQL').output.sinkPeakConnections}',\nUsedDIUs = '@{activity('CopyfromBlobToSQL').output.usedDataIntegrationUnits}',\nUsedParallelCopies ='@{activity('CopyfromBlobToSQL').output.usedParallelCopies}',\nCopyDuration_inseconds ='@{activity('CopyfromBlobToSQL').output.copyDuration}',\nCopyThroughput_inbytespersecond='@{mul(activity('CopyfromBlobToSQL').output.throughput,1024)}'\nwhere ContainerName = '@{item().ContainerName}'\n and SourceFile = '@{item().SourceFile}'\n and TargetDatabase = '@{item().TargetDatabase}'\n and TargetSchema = '@{item().TargetSchema}'\n and TargetTable = '@{item().TargetTable}'",
+											"type": "Expression"
+										}
+									}
+								],
+								"scriptBlockExecutionTimeout": "02:00:00"
+							}
+						}
+					]
+				}
+			}
+		],
+		"annotations": []
+	}
+}
