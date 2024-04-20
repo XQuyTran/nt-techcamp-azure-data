@@ -1,0 +1,12 @@
+{
+	"name": "SD5129incrementalcontrol",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"connectionString": "integrated security=False;encrypt=True;connection timeout=30;data source=azuredb-wj315-dev.database.windows.net;initial catalog=incrementalmetadata;user id=sqladminuser",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDNDQ0U1RTAwLTQyRkItNDMxNi1BRTE5LTQ4RDRBQkU4MTc0MF9mOWU0YzA4Zi00MTAyLTQ4NDItODMxNi04NDdjM2E0MmYxYjQiDQp9"
+		}
+	}
+}
