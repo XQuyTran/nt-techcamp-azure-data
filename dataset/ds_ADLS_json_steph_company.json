@@ -1,0 +1,82 @@
+{
+	"name": "ds_ADLS_json_steph_company",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_ADLS",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"ContainerName": {
+				"type": "string",
+				"defaultValue": "landing"
+			},
+			"DirectoryName": {
+				"type": "string",
+				"defaultValue": "steph/2024/01/26"
+			},
+			"FileName": {
+				"type": "string",
+				"defaultValue": "DynamoV21_Company.json"
+			}
+		},
+		"folder": {
+			"name": "hieu"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().FileName",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().DirectoryName",
+					"type": "Expression"
+				},
+				"fileSystem": {
+					"value": "@dataset().ContainerName",
+					"type": "Expression"
+				}
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"sepID": {
+					"type": "string"
+				},
+				"eventTime": {
+					"type": "string"
+				},
+				"instruments": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"displayName": {
+								"type": "string"
+							}
+						}
+					}
+				},
+				"linkedEvents": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"activityID": {
+								"type": "string"
+							}
+						}
+					}
+				},
+				"link": {
+					"type": "string"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

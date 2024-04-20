@@ -1,0 +1,79 @@
+{
+	"name": "df_ADLStoLanding_adf_SEP",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_ADLS_json_nasa_SEP",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_azuresql_lake_SEP",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "flatten1"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     BatchID as string",
+				"}",
+				"source(output(",
+				"          sepID as string,",
+				"          eventTime as string,",
+				"          instruments as (displayName as string)[],",
+				"          linkedEvents as (activityID as string)[],",
+				"          link as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     documentForm: 'arrayOfDocuments') ~> source1",
+				"source1 foldDown(unrollMultiple(instruments,linkedEvents),",
+				"     mapColumn(",
+				"          sepID,",
+				"          eventTime,",
+				"          instruments_displayName = instruments.displayName,",
+				"          linkedEvents_activityID = linkedEvents.activityID,",
+				"          link",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> flatten1",
+				"flatten1 derive(BatchID = $BatchID) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          sepID,",
+				"          eventTime,",
+				"          instruments_displayName,",
+				"          linkedEvents_activityID,",
+				"          link,",
+				"          BatchID",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

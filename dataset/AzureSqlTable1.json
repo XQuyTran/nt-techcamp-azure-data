@@ -1,0 +1,34 @@
+{
+	"name": "AzureSqlTable1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "EMPLOYEE_ID",
+				"type": "varchar"
+			},
+			{
+				"name": "EMPLOYEE_NAME",
+				"type": "varchar"
+			},
+			{
+				"name": "DATE_OF_JOINING",
+				"type": "varchar"
+			},
+			{
+				"name": "REPORTING_MGR",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "landing",
+			"table": "solar_energetic_particle"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

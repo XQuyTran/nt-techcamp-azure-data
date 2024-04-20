@@ -1,0 +1,56 @@
+{
+	"name": "DS_newjson",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "solar_energetic_particle.json",
+				"folderPath": "SampleJSON",
+				"fileSystem": "lake"
+			}
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"sepID": {
+					"type": "string"
+				},
+				"eventTime": {
+					"type": "string"
+				},
+				"instruments": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"displayName": {
+								"type": "string"
+							}
+						}
+					}
+				},
+				"linkedEvents": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"activityID": {
+								"type": "string"
+							}
+						}
+					}
+				},
+				"link": {
+					"type": "string"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

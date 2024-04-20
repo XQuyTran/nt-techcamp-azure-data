@@ -1,0 +1,397 @@
+{
+	"name": "pip_ProcessData",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get API Endpoints",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderStoredProcedureName": "[adf].[get_APIToADLS_configuration]",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_azuresql",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Process data",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Get API Endpoints",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get API Endpoints').output.value",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"batchCount": 1,
+					"activities": [
+						{
+							"name": "API to ADLS",
+							"description": "API to ADLS",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "log load BatchID",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "RestSource",
+									"httpRequestTimeout": "00:01:40",
+									"requestInterval": "00.00:00:00.010",
+									"requestMethod": {
+										"value": "@item().RequestMethod",
+										"type": "Expression"
+									},
+									"requestBody": {
+										"value": "@item().Body",
+										"type": "Expression"
+									},
+									"additionalHeaders": {
+										"XColumns": {
+											"value": "@item().XColumns",
+											"type": "Expression"
+										},
+										"XSort": {
+											"value": "@item().XSort",
+											"type": "Expression"
+										}
+									},
+									"paginationRules": {
+										"MaxRequestNumber": "1"
+									}
+								},
+								"sink": {
+									"type": "JsonSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings",
+										"copyBehavior": "PreserveHierarchy"
+									},
+									"formatSettings": {
+										"type": "JsonWriteSettings",
+										"filePattern": "arrayOfObjects"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "ds_rest_generic",
+									"type": "DatasetReference",
+									"parameters": {
+										"APIBaseURL": {
+											"value": "@item().APIEndpoint",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ds_ADLS_json_UT8woBOM_generic",
+									"type": "DatasetReference",
+									"parameters": {
+										"ContainerName": {
+											"value": "@item().ADLSContainerName",
+											"type": "Expression"
+										},
+										"DirectoryName": {
+											"value": "@item().ADLSDirectoryName",
+											"type": "Expression"
+										},
+										"FileName": {
+											"value": "@concat(variables('BatchID'), '.json')",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "ADLS to Landing",
+							"type": "Switch",
+							"dependsOn": [
+								{
+									"activity": "API to ADLS",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"on": {
+									"value": "@item().ProcessName",
+									"type": "Expression"
+								},
+								"cases": [
+									{
+										"value": "SolarFlare",
+										"activities": [
+											{
+												"name": "df_ADLStoLanding_adf_SLR",
+												"type": "ExecuteDataFlow",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"dataflow": {
+														"referenceName": "df_ADLStoLanding_adf_SLR",
+														"type": "DataFlowReference",
+														"parameters": {
+															"BatchID": {
+																"value": "'@{variables('BatchID')}'",
+																"type": "Expression"
+															}
+														},
+														"datasetParameters": {
+															"source1": {
+																"ContainerName": "@item().ADLSContainerName",
+																"DirectoryName": "@item().ADLSDirectoryName",
+																"FileName": {
+																	"value": "@concat(variables('BatchID'), '.json')",
+																	"type": "Expression"
+																}
+															}
+														}
+													},
+													"compute": {
+														"coreCount": 8,
+														"computeType": "General"
+													},
+													"traceLevel": "Fine"
+												}
+											}
+										]
+									},
+									{
+										"value": "SolarEnergeticParticle",
+										"activities": [
+											{
+												"name": "df_ADLStoLanding_adf_SEP",
+												"type": "ExecuteDataFlow",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"dataflow": {
+														"referenceName": "df_ADLStoLanding_adf_SEP",
+														"type": "DataFlowReference",
+														"parameters": {
+															"BatchID": {
+																"value": "'@{variables('BatchID')}'",
+																"type": "Expression"
+															}
+														},
+														"datasetParameters": {
+															"source1": {
+																"ContainerName": "@item().ADLSContainerName",
+																"DirectoryName": "@item().ADLSDirectoryName",
+																"FileName": {
+																	"value": "@concat(variables('BatchID'), '.json')",
+																	"type": "Expression"
+																}
+															}
+														}
+													},
+													"compute": {
+														"coreCount": 8,
+														"computeType": "General"
+													},
+													"traceLevel": "Fine"
+												}
+											}
+										]
+									}
+								]
+							}
+						},
+						{
+							"name": "Landing to Staging to Data schema",
+							"description": "Calling SP usp_LoadTable",
+							"type": "SqlServerStoredProcedure",
+							"state": "Inactive",
+							"onInactiveMarkAs": "Succeeded",
+							"dependsOn": [
+								{
+									"activity": "ADLS to Landing",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[adf].[get_APIToADLS_configuration]"
+							},
+							"linkedServiceName": {
+								"referenceName": "ls_azuresql_bp",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "Set BatchID",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "BatchID",
+								"value": {
+									"value": "@concat(item().ProcessName, formatDateTime(utcNow(),'yyyMMddHHmmssffffff'))",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "log load BatchID",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "Set BatchID",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[adf].[usp_newDataLoadLog]",
+								"storedProcedureParameters": {
+									"ADLSContainerName": {
+										"value": {
+											"value": "@item().ADLSContainerName",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"ADLSDirectoryName": {
+										"value": {
+											"value": "@item().ADLSDirectoryName",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"ADLSFileName": {
+										"value": {
+											"value": "@concat(variables('BatchID'), '.json')",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"APIEndpoint": {
+										"value": {
+											"value": "@item().APIEndpoint",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"BatchID": {
+										"value": {
+											"value": "@variables('BatchID')",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"PipelineRunID": {
+										"value": {
+											"value": "@pipeline().parameters.MainPipelineRunID",
+											"type": "Expression"
+										},
+										"type": "Guid"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "ls_azuresql_bp",
+								"type": "LinkedServiceReference"
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"MainPipelineRunID": {
+				"type": "string"
+			},
+			"MainPipelineName": {
+				"type": "string"
+			}
+		},
+		"variables": {
+			"BatchID": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "hieu"
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-01-26T08:54:21Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

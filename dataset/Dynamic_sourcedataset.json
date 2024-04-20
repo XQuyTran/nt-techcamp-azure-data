@@ -1,0 +1,44 @@
+{
+	"name": "Dynamic_sourcedataset",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "linkedservicesource",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"ContainerName": {
+				"type": "String",
+				"defaultValue": "lake"
+			},
+			"SourceFile": {
+				"type": "String",
+				"defaultValue": "json"
+			},
+			"DirectoryName": {
+				"type": "String",
+				"defaultValue": "SampleJSON"
+			}
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().SourceFile",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().DirectoryName",
+					"type": "Expression"
+				},
+				"fileSystem": {
+					"value": "@dataset().ContainerName",
+					"type": "Expression"
+				}
+			}
+		},
+		"schema": {}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

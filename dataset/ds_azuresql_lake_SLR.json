@@ -1,0 +1,65 @@
+{
+	"name": "ds_azuresql_lake_SLR",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_azuresql_bp",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "hieu"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "BatchID",
+				"type": "nvarchar"
+			},
+			{
+				"name": "flrID",
+				"type": "nvarchar"
+			},
+			{
+				"name": "instruments_displayName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "beginTime",
+				"type": "nvarchar"
+			},
+			{
+				"name": "peakTime",
+				"type": "nvarchar"
+			},
+			{
+				"name": "endTime",
+				"type": "nvarchar"
+			},
+			{
+				"name": "classType",
+				"type": "nvarchar"
+			},
+			{
+				"name": "sourceLocation",
+				"type": "nvarchar"
+			},
+			{
+				"name": "activeRegionNum",
+				"type": "nvarchar"
+			},
+			{
+				"name": "linkEvents_activityID",
+				"type": "nvarchar"
+			},
+			{
+				"name": "link",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "adf",
+			"table": "solar_flare"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

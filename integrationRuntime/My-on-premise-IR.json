@@ -1,0 +1,6 @@
+{
+	"name": "My-on-premise-IR",
+	"properties": {
+		"type": "SelfHosted"
+	}
+}

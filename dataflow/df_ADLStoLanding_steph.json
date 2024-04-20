@@ -1,0 +1,91 @@
+{
+	"name": "df_ADLStoLanding_steph",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_ADLS_json_steph_company",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_ADLS_json_steph_company",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "flatten1"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     BatchID as string",
+				"}",
+				"source(output(",
+				"          data as (Companytype as string, ExposureSector as string, Filter2 as short, Filter4 as string, Filter5 as string, Name as string, Ticker as string, {_es} as string, {_id} as string)[],",
+				"          links as (self as string),",
+				"          success as boolean,",
+				"          total as short",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     documentForm: 'arrayOfDocuments') ~> source1",
+				"source1 foldDown(unroll(data),",
+				"     mapColumn(",
+				"          Companytype = data.Companytype,",
+				"          ExposureSector = data.ExposureSector,",
+				"          Filter2 = data.Filter2,",
+				"          Filter4 = data.Filter4,",
+				"          Filter5 = data.Filter5,",
+				"          Name = data.Name,",
+				"          Ticker = data.Ticker,",
+				"          {_es} = data.{_es},",
+				"          {_id} = data.{_id}",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> flatten1",
+				"flatten1 derive(BatchID = $BatchID) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          sepID as string,",
+				"          eventTime as string,",
+				"          instruments as (displayName as string)[],",
+				"          linkedEvents as (activityID as string)[],",
+				"          link as string",
+				"     ),",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          Companytype,",
+				"          ExposureSector,",
+				"          Filter2,",
+				"          Filter4,",
+				"          Filter5,",
+				"          Name,",
+				"          Ticker,",
+				"          {_es},",
+				"          {_id},",
+				"          BatchID",
+				"     ),",
+				"     format: 'table') ~> sink1"
+			]
+		}
+	}
+}

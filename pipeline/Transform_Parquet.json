@@ -1,0 +1,106 @@
+{
+	"name": "Transform_Parquet",
+	"properties": {
+		"activities": [
+			{
+				"name": "C_transform_parquet",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFileName": "HandyCandy.json",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"sink": {
+						"type": "ParquetSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings",
+							"copyBehavior": "MergeFiles"
+						},
+						"formatSettings": {
+							"type": "ParquetWriteSettings"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "$['TransactionId']"
+								},
+								"sink": {
+									"name": "TransactionId"
+								}
+							},
+							{
+								"source": {
+									"path": "$['TransactionDate']"
+								},
+								"sink": {
+									"name": "TransactionDate"
+								}
+							},
+							{
+								"source": {
+									"path": "$['StoreId']"
+								},
+								"sink": {
+									"name": "StoreId"
+								}
+							},
+							{
+								"source": {
+									"path": "$['Items'][0]['Product']"
+								},
+								"sink": {
+									"name": "Product"
+								}
+							},
+							{
+								"source": {
+									"path": "$['Items'][0]['Price']"
+								},
+								"sink": {
+									"name": "Price"
+								}
+							}
+						],
+						"collectionReference": "$['Items']"
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_JSON_HandyCandy",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_PAR_HandyCandy",
+						"type": "DatasetReference"
+					}
+				]
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2024-01-19T01:29:09Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

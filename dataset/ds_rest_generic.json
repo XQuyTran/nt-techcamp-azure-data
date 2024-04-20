@@ -1,0 +1,27 @@
+{
+	"name": "ds_rest_generic",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_rest_generic",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"APIBaseURL": {
+					"value": "@dataset().APIBaseURL",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"APIBaseURL": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "hieu"
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

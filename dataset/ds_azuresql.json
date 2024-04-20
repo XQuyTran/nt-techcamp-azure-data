@@ -1,0 +1,16 @@
+{
+	"name": "ds_azuresql",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_azuresql_bp",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "hieu"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

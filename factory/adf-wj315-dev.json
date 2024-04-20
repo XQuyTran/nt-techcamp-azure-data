@@ -1,0 +1,9 @@
+{
+	"name": "adf-wj315-dev",
+	"location": "southeastasia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "c8113d93-3d1e-4302-ba47-3c7a2afe7f38",
+		"tenantId": "039815dd-00ae-48d7-adbb-090e93dcbc01"
+	}
+}

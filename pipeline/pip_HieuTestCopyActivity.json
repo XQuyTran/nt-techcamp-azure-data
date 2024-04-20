@@ -1,0 +1,263 @@
+{
+	"name": "pip_HieuTestCopyActivity",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get control metadata",
+				"description": "ggg",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "Static_controltable_hieu",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "Process data",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Get control metadata",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('Get control metadata').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "ADLS to Landing",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "JsonSource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": false,
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "JsonReadSettings"
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"writeBehavior": "insert",
+									"sqlWriterUseTableLock": false,
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"value": "@item().TargetJson",
+									"type": "Expression"
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "Dynamic_sourcedataset",
+									"type": "DatasetReference",
+									"parameters": {
+										"ContainerName": {
+											"value": "@item().ContainerName",
+											"type": "Expression"
+										},
+										"SourceFile": {
+											"value": "@item().SourceFile",
+											"type": "Expression"
+										},
+										"DirectoryName": {
+											"value": "@item().DirectoryName",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "Dynamic_landingtable",
+									"type": "DatasetReference",
+									"parameters": {
+										"TargetDatabase": {
+											"value": "@item().TargetDatabase",
+											"type": "Expression"
+										},
+										"TargetSchema": {
+											"value": "@item().TargetSchema",
+											"type": "Expression"
+										},
+										"TargetTable": {
+											"value": "@item().TargetTable",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "Copy data1",
+				"type": "Copy",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "['activityID']"
+								},
+								"sink": {
+									"name": "linkEvents_activityID",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['sepID']"
+								},
+								"sink": {
+									"name": "sepID",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['eventTime']"
+								},
+								"sink": {
+									"name": "eventTime",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['instruments'][0]['displayName']"
+								},
+								"sink": {
+									"name": "instruments_displayName",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['link']"
+								},
+								"sink": {
+									"name": "link",
+									"type": "String"
+								}
+							}
+						],
+						"collectionReference": "$['linkedEvents']"
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "Dynamic_sourcedataset",
+						"type": "DatasetReference",
+						"parameters": {
+							"ContainerName": "lake",
+							"SourceFile": "solar_energetic_particle.json",
+							"DirectoryName": "SampleJSON"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "Dynamic_landingtable",
+						"type": "DatasetReference",
+						"parameters": {
+							"TargetDatabase": "dbdemo",
+							"TargetSchema": "landing",
+							"TargetTable": "solar_energetic_particle"
+						}
+					}
+				]
+			},
+			{
+				"name": "Wait1",
+				"type": "Wait",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 1
+				}
+			},
+			{
+				"name": "Wait2",
+				"type": "Wait",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 1
+				}
+			}
+		],
+		"folder": {
+			"name": "hieu"
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-04-05T00:59:54Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

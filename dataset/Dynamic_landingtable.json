@@ -1,0 +1,51 @@
+{
+	"name": "Dynamic_landingtable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "linkedservicesinkdb",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"TargetDatabase": {
+					"value": "@dataset().TargetDatabase",
+					"type": "Expression"
+				},
+				"TargetSchema": {
+					"value": "@dataset().TargetSchema",
+					"type": "Expression"
+				},
+				"TargetTable": {
+					"value": "@dataset().TargetTable",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"TargetDatabase": {
+				"type": "string",
+				"defaultValue": "dbdemo"
+			},
+			"TargetSchema": {
+				"type": "string",
+				"defaultValue": "landing"
+			},
+			"TargetTable": {
+				"type": "string",
+				"defaultValue": "solar_energetic_particle"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().TargetSchema",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().TargetTable",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

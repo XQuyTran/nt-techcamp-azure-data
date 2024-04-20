@@ -1,0 +1,99 @@
+{
+	"name": "ds_ADLS_json_UT8woBOM_generic",
+	"properties": {
+		"description": "Used in Copy activity",
+		"linkedServiceName": {
+			"referenceName": "ls_ADLS",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"ContainerName": {
+				"type": "string",
+				"defaultValue": "landing"
+			},
+			"DirectoryName": {
+				"type": "string",
+				"defaultValue": "nasa/solar_flare"
+			},
+			"FileName": {
+				"type": "string",
+				"defaultValue": "solar_flare.json"
+			}
+		},
+		"folder": {
+			"name": "hieu"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().FileName",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().DirectoryName",
+					"type": "Expression"
+				},
+				"fileSystem": {
+					"value": "@dataset().ContainerName",
+					"type": "Expression"
+				}
+			},
+			"encodingName": "UTF-8 without BOM"
+		},
+		"schema": {
+			"type": "object",
+			"properties": {
+				"flrID": {
+					"type": "string"
+				},
+				"instruments": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"displayName": {
+								"type": "string"
+							}
+						}
+					}
+				},
+				"beginTime": {
+					"type": "string"
+				},
+				"peakTime": {
+					"type": "string"
+				},
+				"endTime": {
+					"type": "string"
+				},
+				"classType": {
+					"type": "string"
+				},
+				"sourceLocation": {
+					"type": "string"
+				},
+				"activeRegionNum": {
+					"type": "integer"
+				},
+				"linkedEvents": {
+					"type": "array",
+					"items": {
+						"type": "object",
+						"properties": {
+							"activityID": {
+								"type": "string"
+							}
+						}
+					}
+				},
+				"link": {
+					"type": "string"
+				}
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

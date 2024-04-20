@@ -1,0 +1,107 @@
+{
+	"name": "df_ADLStoLanding_adf_SLR",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_ADLS_json_nasa_SLR",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_azuresql_lake_SLR",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "flatten1"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     BatchID as string",
+				"}",
+				"source(output(",
+				"          flrID as string,",
+				"          instruments as (displayName as string)[],",
+				"          beginTime as string,",
+				"          peakTime as string,",
+				"          endTime as string,",
+				"          classType as string,",
+				"          sourceLocation as string,",
+				"          activeRegionNum as integer,",
+				"          linkedEvents as (activityID as string)[],",
+				"          link as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     documentForm: 'arrayOfDocuments') ~> source1",
+				"source1 foldDown(unrollMultiple(instruments,linkedEvents),",
+				"     mapColumn(",
+				"          flrID,",
+				"          instruments_displayName = instruments.displayName,",
+				"          beginTime,",
+				"          peakTime,",
+				"          endTime,",
+				"          classType,",
+				"          sourceLocation,",
+				"          activeRegionNum,",
+				"          linkedEvents_activityID = linkedEvents.activityID,",
+				"          link",
+				"     ),",
+				"     skipDuplicateMapInputs: false,",
+				"     skipDuplicateMapOutputs: false) ~> flatten1",
+				"flatten1 derive(BatchID = $BatchID) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          BatchID as string,",
+				"          flrID as string,",
+				"          instruments_displayName as string,",
+				"          beginTime as string,",
+				"          peakTime as string,",
+				"          endTime as string,",
+				"          classType as string,",
+				"          sourceLocation as string,",
+				"          activeRegionNum as string,",
+				"          linkEvents_activityID as string,",
+				"          link as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          BatchID,",
+				"          flrID,",
+				"          instruments_displayName,",
+				"          beginTime,",
+				"          peakTime,",
+				"          endTime,",
+				"          classType,",
+				"          sourceLocation,",
+				"          activeRegionNum,",
+				"          linkEvents_activityID = linkedEvents_activityID,",
+				"          link",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

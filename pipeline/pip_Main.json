@@ -1,0 +1,315 @@
+{
+	"name": "pip_Main",
+	"properties": {
+		"activities": [
+			{
+				"name": "Log Success",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "If Condition1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[adf].[usp_completePipelineRun]",
+					"storedProcedureParameters": {
+						"PipelineRunID": {
+							"value": {
+								"value": "@variables('MainPipelineRunID')",
+								"type": "Expression"
+							},
+							"type": "Guid"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "ls_azuresql_bp",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Log Failure",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "If Condition1",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[adf].[usp_failPipelineRun]",
+					"storedProcedureParameters": {
+						"LogMessage": {
+							"value": "pipeline failed",
+							"type": "String"
+						},
+						"PipelineRunID": {
+							"value": {
+								"value": "@variables('MainPipelineRunID')",
+								"type": "Expression"
+							},
+							"type": "Guid"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "ls_azuresql_bp",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "Check for running pipeline",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Set MainPipelineRunID",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderStoredProcedureName": "[adf].[checkRunningPipeline]",
+						"storedProcedureParameters": {
+							"PipelineName": {
+								"type": "String",
+								"value": {
+									"value": "@variables('MainPipelineName')",
+									"type": "Expression"
+								}
+							}
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "ds_azuresql",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "If Condition1",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Log new pipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@equals(activity('Check for running pipeline').output.firstRow['IsRunning'], 0)",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "Log Failure_copy1",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[adf].[usp_failPipelineRun]",
+								"storedProcedureParameters": {
+									"LogMessage": {
+										"value": "another pipeline instance is running",
+										"type": "String"
+									},
+									"PipelineRunID": {
+										"value": {
+											"value": "@variables('MainPipelineRunID')",
+											"type": "Expression"
+										},
+										"type": "Guid"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "ls_azuresql_bp",
+								"type": "LinkedServiceReference"
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "Process data",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pip_ProcessData",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"MainPipelineRunID": {
+										"value": "@variables('MainPipelineRunID')",
+										"type": "Expression"
+									},
+									"MainPipelineName": {
+										"value": "@variables('MainPipelineName')",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Set MainPipelineName",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "MainPipelineName",
+					"value": {
+						"value": "@pipeline().Pipeline",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set MainPipelineRunID",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Set MainPipelineName",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "MainPipelineRunID",
+					"value": {
+						"value": "@pipeline().RunId",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Log new pipeline",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "Check for running pipeline",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[adf].[usp_newPipelineRun]",
+					"storedProcedureParameters": {
+						"PipelineName": {
+							"value": {
+								"value": "@variables('MainPipelineName')",
+								"type": "Expression"
+							},
+							"type": "String"
+						},
+						"PipelineRunID": {
+							"value": {
+								"value": "@variables('MainPipelineRunID')",
+								"type": "Expression"
+							},
+							"type": "Guid"
+						},
+						"StartDateTime": {
+							"value": {
+								"value": "@utcnow()",
+								"type": "Expression"
+							},
+							"type": "DateTime"
+						},
+						"TriggeredBy": {
+							"value": "manually testing",
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "ls_azuresql_bp",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"variables": {
+			"MainPipelineRunID": {
+				"type": "String"
+			},
+			"MainPipelineName": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "hieu"
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-01-26T08:54:21Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

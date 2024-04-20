@@ -1,0 +1,45 @@
+{
+	"name": "DS_AzureSQLJSon",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "SalesMonth",
+				"type": "date"
+			},
+			{
+				"name": "Retailer",
+				"type": "varchar"
+			},
+			{
+				"name": "Product",
+				"type": "varchar"
+			},
+			{
+				"name": "ManufacturerProductCode",
+				"type": "varchar"
+			},
+			{
+				"name": "UnitsSold",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "SalesValueUSD",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 0
+			}
+		],
+		"typeProperties": {
+			"schema": "landing",
+			"table": "solar_energetic_particle"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

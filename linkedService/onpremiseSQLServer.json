@@ -1,0 +1,20 @@
+{
+	"name": "onpremiseSQLServer",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"connectionString": "integrated security=True;data source=VNNOT01332;initial catalog=rookie",
+			"userName": "Harveynash\\longhoang",
+			"alwaysEncryptedSettings": {
+				"alwaysEncryptedAkvAuthType": "ManagedIdentity"
+			},
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI5MWM1ZjdiYS02YzNjLTQ0NTUtOGNlOC00ZDM1MjkxZjAyZTkiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "My-on-premise-IR",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
