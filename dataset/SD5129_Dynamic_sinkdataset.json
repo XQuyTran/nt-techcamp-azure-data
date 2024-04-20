@@ -1,0 +1,47 @@
+{
+	"name": "SD5129_Dynamic_sinkdataset",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "SD5129incrementalsink",
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"TargetDatabase": {
+					"value": "@dataset().TargetDatabase",
+					"type": "Expression"
+				},
+				"TargetSchema": {
+					"value": "@dataset().TargetSchema",
+					"type": "Expression"
+				},
+				"TargetTable": {
+					"value": "@dataset().TargetTable",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"TargetDatabase": {
+				"type": "String"
+			},
+			"TargetSchema": {
+				"type": "String"
+			},
+			"TargetTable": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().TargetSchema",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().TargetTable",
+				"type": "Expression"
+			}
+		}
+	}
+}

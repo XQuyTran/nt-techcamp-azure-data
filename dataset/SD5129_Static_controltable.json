@@ -1,0 +1,111 @@
+{
+	"name": "SD5129_Static_controltable",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "SD5129incrementalcontrol",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "ContainerName",
+				"type": "nchar"
+			},
+			{
+				"name": "SourceFile",
+				"type": "nchar"
+			},
+			{
+				"name": "TargetDatabase",
+				"type": "nchar"
+			},
+			{
+				"name": "TargetSchema",
+				"type": "nchar"
+			},
+			{
+				"name": "TargetTable",
+				"type": "nchar"
+			},
+			{
+				"name": "TargetJson",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Pipeline_Name",
+				"type": "nvarchar"
+			},
+			{
+				"name": "RunId",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ActivityStart",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ActivityEnd",
+				"type": "nvarchar"
+			},
+			{
+				"name": "ActivityStatus",
+				"type": "nvarchar"
+			},
+			{
+				"name": "FilesRead",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "RowsRead",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "SourcePeakConnections",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "RowsWritten",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "SinkPeakConnections",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "UsedDIUs",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "UsedParallelCopies",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "CopyDuration_inseconds",
+				"type": "bigint",
+				"precision": 19
+			},
+			{
+				"name": "CopyThroughput_inbytespersecond",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 0
+			},
+			{
+				"name": "Errors",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "MetadataControlTable"
+		}
+	}
+}
